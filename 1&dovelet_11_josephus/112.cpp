@@ -7,18 +7,18 @@ int main(){
 	while(cin>>sum){
 		char c=1,prec=2;
 		int count=0,check=0;
-		cout<<sum;
 		stack<int> st;
+		st.push(sum);
 		while(cin>>c){
 			if(c=='('){
 				int in;
 				cin>>in;
-				cout<<in;
 				count+=in;
-				if(in!=0)st.push(in);
+				if(in!=0){st.push(in);}
 				prec = c;
 			}
-			else if (c==')'){
+			if (c==')'){
+				cout<<"asdf"<<endl;
 				if(prec==c){
 					if(sum==count){
 						check=1;
