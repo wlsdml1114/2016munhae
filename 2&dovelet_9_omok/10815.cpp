@@ -23,6 +23,9 @@ int main(){
 				str2="";
 			}
 		}
+		vec.push_back(str2);
+		str2="";
+
 	}
 	sort(vec.begin(),vec.end());
 	string distinct="";
