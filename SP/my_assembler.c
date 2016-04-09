@@ -87,7 +87,7 @@ int init_my_assembler(void)
 static int assem_pass1(void)
 {
 	int i;
-	for(i=0;i<line_num;++i){
+	for(i=0;i<=line_num;++i){
 		if(input_data[i][0]=='.')continue;//ju suk cher ri
 		token_parsing(i);
 	}
@@ -107,7 +107,7 @@ static int assem_pass1(void)
 
 static int assem_pass2(void)
 {
-
+	
 	/* add your code here */
 	return 0;
 }
@@ -142,7 +142,7 @@ int init_inst_file(char *inst_file)
 			fscanf(in_fp,"%s",ch);
 			inst[i].ops = atoi(ch);
 			fscanf(in_fp,"%s",ch);
-			printf("%s %hhx %d %d\n", inst[i].str,inst[i].op,inst[i].format,inst[i].ops);
+			// printf("%s %hhx %d %d\n", inst[i].str,inst[i].op,inst[i].format,inst[i].ops);
 			i++;
 		}
 	}
@@ -198,6 +198,7 @@ int token_parsing(int index)
 	char *token;
 	const char s[2] = "\t";
 	int i;
+	printf("%s",input_data[index]);
 	token = strtok(input_data[index],s);
 	// while(token!=NULL){
 		// printf("%s\n",token);
@@ -206,43 +207,64 @@ int token_parsing(int index)
 	// printf("\n");
 	token_table[token_line] = malloc(sizeof(token_table[token_line]));
 	if(input_data[index][0]=='\t'){//no label
-		// token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
-		token_table[token_line]->label = NULL;
+		token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
+		token_table[token_line]->label = "\t";
+		printf("%s",token_table[token_line]->label);
 		token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
 		strcpy(token_table[token_line]->operator_,token);
-		printf("%s\n",token_table[token_line]->operator_);
+		printf("%s\t",token_table[token_line]->operator_);
 		token = strtok(NULL,s);
-
-		printf("%s\n",token);
-		token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
-		strcpy(token_table[token_line]->operand[0],token);
-		token = strtok(NULL,s);
-		// printf("%s\n",token);
-		// token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
-		// strcpy(token_table[token_line]->comment,token);
+		if(token==NULL){
+			token_line++;
+			return 0;
+		}
+		if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
+			token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
+			if(token[strlen(token)-1]=='\n'){
+				token[strlen(token)-1]='\0';
+			}
+			strcpy(token_table[token_line]->operand[0],token);
+			printf("%s\t",token_table[token_line]->operand[0]);
+			token = strtok(NULL,s);
+		}
+		if(token==NULL){
+			token_table[token_line]->comment = NULL;
+		}
+		else{
+			token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
+			strcpy(token_table[token_line]->comment,token);
+			printf("%s",token_table[token_line]->comment);
+		}
 	}
-	// else{// yes label
+	else{
+		
+		token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
+		strcpy(token_table[token_line]->label,token);
+		printf("%s\t",token_table[token_line]->label);
+		token = strtok(NULL,s);
+		token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
+		strcpy(token_table[token_line]->operator_,token);
+		printf("%s\t",token_table[token_line]->operator_);
+		token = strtok(NULL,s);
 
-	// 	token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->label,token);
-	// 	token = strtok(NULL,s);
-
-	// 	token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->operator_,token);
-	// 	token = strtok(NULL,s);
-
-	// 	token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->operand[0],token);
-	// 	token = strtok(NULL,s);
-
-	// 	token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->comment,token);
-	// }
-	// while(rpos<strlen(input_data[index])){
-	// 	if(input_data[index][rpos]=='\t'){
-	// 	}
-	// 	rpos++;
-	// }
+		if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
+			token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
+			if(token[strlen(token)-1]=='\n'){
+				token[strlen(token)-1]='\0';
+			}
+			strcpy(token_table[token_line]->operand[0],token);
+			printf("%s\t",token_table[token_line]->operand[0]);
+			token = strtok(NULL,s);
+		}
+		if(token==NULL){
+			token_table[token_line]->comment = NULL;
+		}
+		else{
+			token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
+			strcpy(token_table[token_line]->comment,token);
+			printf("%s",token_table[token_line]->comment);
+		}
+	}
 	token_line++;
 	return 0;
 }
