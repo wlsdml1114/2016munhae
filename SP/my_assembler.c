@@ -29,7 +29,7 @@
 *		   또한 중간파일을 생성하지 않는다.
 * -----------------------------------------------------------------------------------
 */
-
+char opcode[MAX_LINES];//기계어 코드를 저장하기 위한 배열
 
 int main(int args, char *arg[])
 {
@@ -47,7 +47,8 @@ int main(int args, char *arg[])
 		return -1;
 	}
 
-	//make_output("output") ; 
+
+//	make_objectcode("output") ;
 }
 /* -----------------------------------------------------------------------------------
 * 설명 : 프로그램 초기화를 위한 자료구조 생성 및 파일을 읽는 함수이다.
@@ -88,7 +89,7 @@ static int assem_pass1(void)
 {
 	int i;
 	for(i=0;i<line_num;++i){
-		if(input_data[i][0]=='.')continue;//ju suk cher ri
+		if(input_data[i][0]=='.')continue;//.으로 시작하는 주석부분을 건너뛴다.
 		token_parsing(i);
 	}
 	return 0;
@@ -107,8 +108,10 @@ static int assem_pass1(void)
 
 static int assem_pass2(void)
 {
-
-	/* add your code here */
+	int i;
+	for(i=0;i<token_line;++i){
+		opcode[i]=search_opcode(token_table[i]->operator_);
+	}
 	return 0;
 }
 /* -----------------------------------------------------------------------------------
@@ -142,7 +145,7 @@ int init_inst_file(char *inst_file)
 			fscanf(in_fp,"%s",ch);
 			inst[i].ops = atoi(ch);
 			fscanf(in_fp,"%s",ch);
-			printf("%s %hhx %d %d\n", inst[i].str,inst[i].op,inst[i].format,inst[i].ops);
+			// printf("%s %hhx %d %d\n", inst[i].str,inst[i].op,inst[i].format,inst[i].ops);
 			i++;
 		}
 	}
@@ -198,6 +201,7 @@ int token_parsing(int index)
 	char *token;
 	const char s[2] = "\t";
 	int i;
+//	printf("%s",input_data[index]);
 	token = strtok(input_data[index],s);
 	// while(token!=NULL){
 		// printf("%s\n",token);
@@ -206,43 +210,43 @@ int token_parsing(int index)
 	// printf("\n");
 	token_table[token_line] = malloc(sizeof(token_table[token_line]));
 	if(input_data[index][0]=='\t'){//no label
-		// token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
-		token_table[token_line]->label = NULL;
-		token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
-		strcpy(token_table[token_line]->operator_,token);
-		printf("%s\n",token_table[token_line]->operator_);
-		token = strtok(NULL,s);
-
-		printf("%s\n",token);
-		token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
-		strcpy(token_table[token_line]->operand[0],token);
-		token = strtok(NULL,s);
-		// printf("%s\n",token);
-		// token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
-		// strcpy(token_table[token_line]->comment,token);
+		token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
+		token_table[token_line]->label = "\t";
+		printf("%s",token_table[token_line]->label);
 	}
-	// else{// yes label
+	else{
+		token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
+		strcpy(token_table[token_line]->label,token);
+		printf("%s\t",token_table[token_line]->label);
+		token = strtok(NULL,s);
+	}
+	token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
+	strcpy(token_table[token_line]->operator_,token);
+	printf("%s\t",token_table[token_line]->operator_);
+	token = strtok(NULL,s);
 
-	// 	token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->label,token);
-	// 	token = strtok(NULL,s);
+	if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
+		token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
+		if(token[strlen(token)-1]=='\n'){
+			token[strlen(token)-1]='\0';
+		}
+		strcpy(token_table[token_line]->operand[0],token);
+		printf("%s\t",token_table[token_line]->operand[0]);
+		token = strtok(NULL,s);
+	}
+	if(token==NULL){
+		token_table[token_line]->comment = NULL;
+		printf("\n");
+	}
+	else{
+		token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
+		if(token[strlen(token)-1]=='\n'){
+			token[strlen(token)-1]='\0';
+		}
+		strcpy(token_table[token_line]->comment,token);
+		printf("%s\n",token_table[token_line]->comment);
+	}
 
-	// 	token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->operator_,token);
-	// 	token = strtok(NULL,s);
-
-	// 	token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->operand[0],token);
-	// 	token = strtok(NULL,s);
-
-	// 	token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
-	// 	strcpy(token_table[token_line]->comment,token);
-	// }
-	// while(rpos<strlen(input_data[index])){
-	// 	if(input_data[index][rpos]=='\t'){
-	// 	}
-	// 	rpos++;
-	// }
 	token_line++;
 	return 0;
 }
@@ -257,8 +261,13 @@ int token_parsing(int index)
 
 int search_opcode(char *str)
 {
-	/* add your code here */
-	return 0;
+	int i;
+	for(i=0;i<inst_index;++i){
+		if(strcmp(str,inst[i].str)==0){
+			return i;
+		}
+	}
+	return -1;
 }
 /* -----------------------------------------------------------------------------------
 * 설명 : 입력된 문자열의 이름을 가진 파일에 프로그램의 결과를 저장하는 함수이다.
@@ -269,10 +278,51 @@ int search_opcode(char *str)
 *
 * -----------------------------------------------------------------------------------
 */
-
-void make_objectcode(char *file_name)
-{
-	/* add your code here */
-
-}
-
+//
+//void make_objectcode(char *file_name)
+//{
+//	if(file_name==NULL){
+//			token_table[token_line] = malloc(sizeof(token_table[token_line]));
+//			if(input_data[index][0]=='\t'){//no label
+//				token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
+//				token_table[token_line]->label = "\t";
+//		//		printf("%s",token_table[token_line]->label);
+//			}
+//			else{
+//				token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
+//				strcpy(token_table[token_line]->label,token);
+//		//		printf("%s\t",token_table[token_line]->label);
+//				token = strtok(NULL,s);
+//			}
+//			token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
+//			strcpy(token_table[token_line]->operator_,token);
+//		//	printf("%s\t",token_table[token_line]->operator_);
+//			token = strtok(NULL,s);
+//
+//			if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
+//				token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
+//				if(token[strlen(token)-1]=='\n'){
+//					token[strlen(token)-1]='\0';
+//				}
+//				strcpy(token_table[token_line]->operand[0],token);
+//		//		printf("%s\t",token_table[token_line]->operand[0]);
+//				token = strtok(NULL,s);
+//			}
+//			if(token==NULL){
+//				token_table[token_line]->comment = NULL;
+//		//		printf("\n");
+//			}
+//			else{
+//				token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
+//				if(token[strlen(token)-1]=='\n'){
+//					token[strlen(token)-1]='\0';
+//				}
+//				strcpy(token_table[token_line]->comment,token);
+//		//		printf("%s\n",token_table[token_line]->comment);
+//			}
+//
+//	}
+//	else{
+//
+//	}
+//}
