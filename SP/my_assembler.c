@@ -47,8 +47,8 @@ int main(int args, char *arg[])
 		return -1;
 	}
 
-
-//	make_objectcode("output") ;
+	make_objectcode(NULL) ;
+	make_objectcode("output") ;
 }
 /* -----------------------------------------------------------------------------------
 * 설명 : 프로그램 초기화를 위한 자료구조 생성 및 파일을 읽는 함수이다.
@@ -210,19 +210,20 @@ int token_parsing(int index)
 	// printf("\n");
 	token_table[token_line] = malloc(sizeof(token_table[token_line]));
 	if(input_data[index][0]=='\t'){//no label
-		token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
-		token_table[token_line]->label = "\t";
-		printf("%s",token_table[token_line]->label);
+		token_table[token_line]->label = (char *)malloc(sizeof(char)*4);
+		strcpy(token_table[token_line]->label,"\t");
+//		printf("%s",token_table[token_line]->label);
 	}
 	else{
 		token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
 		strcpy(token_table[token_line]->label,token);
-		printf("%s\t",token_table[token_line]->label);
+		strcpy(sym_table[token_line].symbol,token);
+//		printf("%s%d\n",token_table[token_line]->label,strlen(token_table[token_line]->label));
 		token = strtok(NULL,s);
 	}
 	token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
 	strcpy(token_table[token_line]->operator_,token);
-	printf("%s\t",token_table[token_line]->operator_);
+//	printf("%s\t",token_table[token_line]->operator_);
 	token = strtok(NULL,s);
 
 	if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
@@ -231,12 +232,12 @@ int token_parsing(int index)
 			token[strlen(token)-1]='\0';
 		}
 		strcpy(token_table[token_line]->operand[0],token);
-		printf("%s\t",token_table[token_line]->operand[0]);
+//		printf("%s\t",token_table[token_line]->operand[0]);
 		token = strtok(NULL,s);
 	}
 	if(token==NULL){
 		token_table[token_line]->comment = NULL;
-		printf("\n");
+//		printf("\n");
 	}
 	else{
 		token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
@@ -244,7 +245,7 @@ int token_parsing(int index)
 			token[strlen(token)-1]='\0';
 		}
 		strcpy(token_table[token_line]->comment,token);
-		printf("%s\n",token_table[token_line]->comment);
+//		printf("%s\n",token_table[token_line]->comment);
 	}
 
 	token_line++;
@@ -278,51 +279,56 @@ int search_opcode(char *str)
 *
 * -----------------------------------------------------------------------------------
 */
-//
-//void make_objectcode(char *file_name)
-//{
-//	if(file_name==NULL){
-//			token_table[token_line] = malloc(sizeof(token_table[token_line]));
-//			if(input_data[index][0]=='\t'){//no label
-//				token_table[token_line]->label = (char *)malloc(sizeof(char)*2);
-//				token_table[token_line]->label = "\t";
-//		//		printf("%s",token_table[token_line]->label);
-//			}
-//			else{
-//				token_table[token_line]->label = (char *)malloc(sizeof(char)*strlen(token)+1);
-//				strcpy(token_table[token_line]->label,token);
-//		//		printf("%s\t",token_table[token_line]->label);
-//				token = strtok(NULL,s);
-//			}
-//			token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
-//			strcpy(token_table[token_line]->operator_,token);
-//		//	printf("%s\t",token_table[token_line]->operator_);
-//			token = strtok(NULL,s);
-//
-//			if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
-//				token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
-//				if(token[strlen(token)-1]=='\n'){
-//					token[strlen(token)-1]='\0';
-//				}
-//				strcpy(token_table[token_line]->operand[0],token);
-//		//		printf("%s\t",token_table[token_line]->operand[0]);
-//				token = strtok(NULL,s);
-//			}
-//			if(token==NULL){
-//				token_table[token_line]->comment = NULL;
-//		//		printf("\n");
-//			}
-//			else{
-//				token_table[token_line]->comment = (char *)malloc(sizeof(char)*strlen(token)+1);
-//				if(token[strlen(token)-1]=='\n'){
-//					token[strlen(token)-1]='\0';
-//				}
-//				strcpy(token_table[token_line]->comment,token);
-//		//		printf("%s\n",token_table[token_line]->comment);
-//			}
-//
-//	}
-//	else{
-//
-//	}
-//}
+
+void make_objectcode(char *file_name)
+{
+	if(file_name==NULL){
+		int i=0;
+		for(i=0;i<token_line;++i){
+			if(strcmp(token_table[i]->label,"\t")==0){//no label
+				printf("%s",token_table[i]->label);
+			}
+			else{
+				printf("%s\t",sym_table[i].symbol);
+			}
+			printf("%s\t",token_table[i]->operator_);
+
+			if(strcmp(token_table[i]->operator_,"RSUB")!=0){
+				printf("%s\t",token_table[i]->operand[0]);
+			}
+			else{
+				printf("\t");
+			}
+			if(opcode[i]!=-1){
+				printf("%02hhX",inst[opcode[i]].op);
+			}
+			printf("\n");
+		}
+	}
+	else{
+		FILE *of;
+		of = fopen(file_name,"w");
+		int i=0;
+		for(i=0;i<token_line;++i){
+			if(strcmp(token_table[i]->label,"\t")==0){//no label
+				fprintf(of,"%s",token_table[i]->label);
+			}
+			else{
+				fprintf(of,"%s\t",sym_table[i].symbol);
+			}
+			fprintf(of,"%s\t",token_table[i]->operator_);
+
+			if(strcmp(token_table[i]->operator_,"RSUB")!=0){
+				fprintf(of,"%s\t",token_table[i]->operand[0]);
+			}
+			else{
+				fprintf(of,"\t");
+			}
+			if(opcode[i]!=-1){
+				fprintf(of,"%02hhX",inst[opcode[i]].op);
+			}
+			fprintf(of,"\n");
+		}
+		fclose(of);
+	}
+}
