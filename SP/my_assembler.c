@@ -224,7 +224,7 @@ int token_parsing(int index)
 	token_table[token_line]->operator_ = (char *)malloc(sizeof(char)*strlen(token)+1);
 	strcpy(token_table[token_line]->operator_,token);
 //	printf("%s\t",token_table[token_line]->operator_);
-	token = strtok(NULL,s);
+	token = strtok(NULL,"\t\v");
 
 	if(strcmp(token_table[token_line]->operator_,"RSUB")!=0){
 		token_table[token_line]->operand[0] = (char *)malloc(sizeof(char)*strlen(token)+1);
