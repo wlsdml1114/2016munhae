@@ -88,13 +88,17 @@ typedef struct symbol_unit symbol;
 symbol sym_table[SECTOR_MAX][MAX_LINES];
 static int symbol_line[SECTOR_MAX];
 
+char * extdef[SECTOR_MAX][MAX_LINES];
+static int extdef_num[SECTOR_MAX];
+
+
 struct literal_unit{
 	char * literal;
 	int length;
+	int address;
 };
 
-struct literal_unit liter[SECTOR_MAX][MAX_LINES];
-static int literal_number[SECTOR_MAX];
+struct literal_unit liter[SECTOR_MAX];
 
 static int locctr[SECTOR_MAX];
 
