@@ -138,8 +138,9 @@ static int assem_pass1(void)
 //				sym_table[sectionIndex-1][symbol_line].symbol = (char *)malloc(sizeof(strlen(token)));
 				token_table[token_line].operand[i] = malloc(sizeof(token));
 				strcpy(token_table[token_line].operand[i++],token);
-				strcpy(sym_table[sectionIndex-1][symbol_line[sectionIndex-1]].symbol,token);
-				sym_table[sectionIndex-1][symbol_line[sectionIndex-1]++].addr = 0;
+				strcpy(Modifi[sectionIndex-1][Modifi_num[sectionIndex-1]++],token);
+//				strcpy(sym_table[sectionIndex-1][symbol_line[sectionIndex-1]].symbol,token);
+//				sym_table[sectionIndex-1][symbol_line[sectionIndex-1]++].addr = 0;
 				token = strtok(NULL,s);
 			}
 			while(token!=NULL);
@@ -242,13 +243,21 @@ static int assem_pass1(void)
 * 주의 :
 * -----------------------------------------------------------------------------------
 */
-
+int AXST(char s){
+	if (s=='X')return 1;
+	else if(s=='A')return 0;
+	else if(s=='S')return 4;
+	else return 5;
+}
 static int assem_pass2(void)
 {
 	int i=0,indexOfInst,section=0;
 	for(;i<token_line;++i){
 		printf("%04X\t%s\t%s",token_table[i].addr,token_table[i].label,token_table[i].operator_);
-		if(token_table[i].operand[0]!=NULL){
+		if(strcmp(token_table[i].operator_,"RSUB")==0){
+			printf("\t");
+		}
+		else if(token_table[i].operand[0]!=NULL){
 			printf("\t%s",token_table[i].operand[0]);
 		}
 		if(token_table[i].operand[1]!=NULL){
@@ -257,62 +266,134 @@ static int assem_pass2(void)
 		if( strcmp(token_table[i].operator_, "CSECT") == 0){
 			section++;
 		}
-		char *buffer = (char *)malloc(token_table[i].length);
+		token_table[i].opcode= (char *)malloc(token_table[i].length*2);
 		char reg[6];
-		if(token_table[i].length==2){
-			indexOfInst = search_opcode(token_table[i].operator_);
-
+		if(strcmp(token_table[i].operator_,"CLEAR")==0){
+			sprintf(token_table[i].opcode, "%X", 0xB);
+			sprintf(token_table[i].opcode+1, "%X", 0x4);
+			sprintf(token_table[i].opcode+2, "%X", AXST(token_table[i].operand[0][0]));
+			sprintf(token_table[i].opcode+3, "%X", 0);
 		}
 
+		else if(strcmp(token_table[i].operator_,"COMPR")==0){
+			sprintf(token_table[i].opcode, "%X", 0xA);
+			sprintf(token_table[i].opcode+1, "%X", 0x0);
+			sprintf(token_table[i].opcode+2, "%X", AXST(token_table[i].operand[0][0]));
+			sprintf(token_table[i].opcode+3, "%X", AXST(token_table[i].operand[0][2]));
+		}
+
+		if(strcmp(token_table[i].operator_,"TIXR")==0){
+			sprintf(token_table[i].opcode, "%X", 0xB);
+			sprintf(token_table[i].opcode+1, "%X", 0x8);
+			sprintf(token_table[i].opcode+2, "%X", AXST(token_table[i].operand[0][0]));
+			sprintf(token_table[i].opcode+3, "%X", 0);
+		}
 		else if((indexOfInst = search_opcode(token_table[i].operator_)) > -1){
 			if(token_table[i].operand[0][0]=='#'){//nixbpe
 				reg[0] = 0; reg[1] = 1; reg[2] = 0;
 				reg[3] = 0; reg[4] = 0; reg[5] = 0;
+
+
+				token_table[i].opcode = (char*)malloc(6);
+				sprintf(token_table[i].opcode,"%X",inst[indexOfInst].op/16);
+				sprintf(token_table[i].opcode+1,"%X",inst[indexOfInst].op%16+reg[0]*2+reg[1]);
+				sprintf(token_table[i].opcode+2,"%X",reg[2]*8+reg[3]*4+reg[4]*2+reg[5]);
+				sprintf(token_table[i].opcode+3,"%03X",atoi(&token_table[i].operand[0][1]));
+
 			}else if(token_table[i].operator_[0]=='+'){
 				reg[0] = 1; reg[1] = 1; reg[2] = 0;
 				reg[3] = 0; reg[4] = 0; reg[5] = 1;
+				if(token_table[i].operand[0][strlen(token_table[i].operand[0])-1]=='X'){
+					reg[2]=1;
+				}
+				token_table[i].opcode = (char*)malloc(8);
+				sprintf(token_table[i].opcode,"%X",inst[indexOfInst].op/16);
+				sprintf(token_table[i].opcode+1,"%X",inst[indexOfInst].op%16+reg[0]*2+reg[1]);
+				sprintf(token_table[i].opcode+2,"%X",reg[2]*8+reg[3]*4+reg[4]*2+reg[5]);
+				sprintf(token_table[i].opcode+3,"00000");
+
+				char *token;
+				const char s[2] = ",";
+				token = strtok(token_table[i].operand[0],s);
+				Modi[section][modi_num[section]].name = (char *)malloc(sizeof(token));
+				strcpy(Modi[section][modi_num[section]].name,token);
+				Modi[section][modi_num[section]].address = token_table[i].addr+1;
+				Modi[section][modi_num[section]].flag = 1;
+				Modi[section][modi_num[section]++].length = 5;
+
+
+//				printf("%s\n%s\n%s\n%s\n%s\n",Modifi[0][0],Modifi[0][1],Modifi[1][0],Modifi[1][1],Modifi[2][1]);
 			}else if(token_table[i].operand[0][0]=='@'){
 				reg[0] = 1; reg[1] = 0; reg[2] = 0;
 				reg[3] = 0; reg[4] = 1; reg[5] = 0;
-			}else{
+			}else {
 				reg[0] = 1; reg[1] = 1; reg[2] = 0;
 				reg[3] = 0; reg[4] = 1; reg[5] = 0;
 			}
 
+			if(strcmp(token_table[i].operator_,"RSUB")==0){
+				reg[0] = 1; reg[1] = 1; reg[2] = 0;
+				reg[3] = 0; reg[4] = 0; reg[5] = 0;
+				token_table[i].opcode = (char*)malloc(6);
+				sprintf(token_table[i].opcode,"%X",0x4);
+				sprintf(token_table[i].opcode+1,"%X",0xC+reg[0]*2+reg[1]);
+				sprintf(token_table[i].opcode+2,"%X",reg[2]*8+reg[3]*4+reg[4]*2+reg[5]);
+				sprintf(token_table[i].opcode+3,"000");
+			}
 
 
 		}
 
 
-		else if(strcmp(token_table[i].operator_,"END")==0||
-				strcmp(token_table[i].operator_,"BYTE")==0||
-				strcmp(token_table[i].operator_,"WORD")==0||
-				strcmp(token_table[i].operator_,"LTORG")==0){
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		else if(strcmp(token_table[i].operator_,"END")==0){
+			printf("\n%04X\t*\t%s",token_table[i].addr,liter[section][0].literal);
+			token_table[i].opcode = (char*)malloc((strlen(liter[section][0].literal)-4));
+			int j=0;
+			for(;j<(strlen(liter[section][0].literal)-4);++j){
+				sprintf(token_table[i].opcode+j, "%c", liter[section][0].literal[3+j]);
+			}
 		}
 
-		printf("\n");
+		else if(strcmp(token_table[i].operator_,"BYTE")==0){
+			int j=0;
+			for(;j<(strlen(token_table[i].operand[0])-3);++j){
+				sprintf(token_table[i].opcode+j, "%c", token_table[i].operand[0][2+j]);
+			}
+		}
+		else if(strcmp(token_table[i].operator_,"WORD")==0){
+			char *token;
+			char buffer[1024];
+			strcpy(buffer,token_table[i].operand[0]);
+			const char s[2] = "-";
+			token = strtok(buffer,s);
+			Modi[section][modi_num[section]].name = (char *)malloc(sizeof(token));
+			strcpy(Modi[section][modi_num[section]].name,token);
+			Modi[section][modi_num[section]].address = token_table[i].addr;
+			Modi[section][modi_num[section]].flag = 1;
+			Modi[section][modi_num[section]++].length = 6;
+
+			token = strtok(buffer,s);
+			Modi[section][modi_num[section]].name = (char *)malloc(sizeof(token));
+			strcpy(Modi[section][modi_num[section]].name,token);
+			Modi[section][modi_num[section]].address = token_table[i].addr;
+			Modi[section][modi_num[section]].flag = 0;
+			Modi[section][modi_num[section]++].length = 6;
+			token_table[i].opcode = (char *)malloc(6);
+			sprintf(token_table[i].opcode,"000000");//because both value is 0000;
+//			printf("%d%s%d%x\n%d%s%d%x",Modi[section][0].flag,Modi[section][0].name,Modi[section][0].length,Modi[section][0].address,Modi[section][1].flag,Modi[section][1].name,Modi[section][1].length,Modi[section][1].address);
+		}
+
+		else if(strcmp(token_table[i].operator_,"LTORG")==0){
+			printf("\n%04X\t*\t\t%s",token_table[i].addr,liter[section][0].literal);
+			token_table[i].opcode = (char*)malloc((strlen(liter[section][0].literal)-4)*2);
+			int j=0;
+			for(;j<(strlen(liter[section][0].literal)-4);++j){
+				sprintf(token_table[i].opcode+j*2, "%X", liter[section][0].literal[3+j]/16);
+				sprintf(token_table[i].opcode+1+j*2, "%X", liter[section][0].literal[3+j]%16);
+			}
+		}
+
+		printf("\t%s\n",token_table[i].opcode);
 	}
 	make_objectcode("output.txt");
 	return 0;

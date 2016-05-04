@@ -10,6 +10,10 @@
 
 #define SECTOR_MAX 10
 
+#define XXX 1
+#define AAA 0
+#define SSS 4
+#define TTT 5
 /*
 * 기계어 목록 파일로 부터 정보를 받아와 생성하는 기계어 변환 테이블이다.
 * 해당 기계어의 정보를 토큰으로 나눠 기록하고 있다.
@@ -58,8 +62,19 @@ typedef struct token_unit token;
 token token_table[MAX_LINES];
 static int token_line;
 
+char  Modifi[SECTOR_MAX][MAX_LINES][10];// for EXTREF
+static int Modifi_num[SECTOR_MAX];
 
 
+struct Modification_record{// for objectcode
+	int flag;
+	char *name;
+	int length;
+	int address;
+};
+
+struct Modification_record Modi[SECTOR_MAX][MAX_LINES];
+static int modi_num[SECTOR_MAX];
 /*
 * 심볼을 관리하는 구조체이다.
 * 심볼 테이블은 심볼 이름, 심볼의 위치로 구성된다.
