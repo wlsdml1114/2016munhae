@@ -11,7 +11,7 @@ int ox[4] = {0,1,0,-1};
 int oy[4] = {1,0,-1,0};
 
 // Represents the direction of the path.
-enum Change {
+enum Style {
   HOR,
   VER,
   NONE,  // Initially the path has no direction.
@@ -21,45 +21,44 @@ struct Node {
   int x;
   int y;
   int step;
-  Change change;
+  Style style;
 
-  Node(int _x, int _y, int _step, Change _c)
-    : x(_x), y(_y), step(_step), change(_c) {}
+  Node(int _x, int _y, int _step, Style _c)
+    : x(_x), y(_y), step(_step), style(_c) {}
 };
 
 
 int visit(int x1, int y1, int x2, int y2, int w, int h) {
   queue<Node> q;
   q.push({x1, y1, 0, NONE});
-
   vector<vb> visited(h + 10, vb(w + 10));
   visited[y1][x1] = true;
 
   while (!q.empty()) {
     Node& top = q.front();
     for (int i = 0; i < 4; ++i) {
-      int nx = top.x + ox[i];
-      int ny = top.y + oy[i];
-      Change nc = ox[i] != 0 ? HOR : VER;
-      if (ny == y2 && nx == x2)
-        return top.step + (top.change != nc ? 1 : 0);
+      if(q.empty()){
+      }
+      int dx = top.x + ox[i];
+      int dy = top.y + oy[i];
+      Style nc = ox[i] != 0 ? HOR : VER;
+      if(q.empty()){
+      }
+      if (dy == y2 && dx == x2)
+        return top.step + (top.style != nc ? 1 : 0);
 
-      if (nx < 0 || ny < 0 || nx > w + 1 || ny > h + 1 ||
-          visited[ny][nx] || arr[ny][nx] != ' ') {
+      if (dx < 0 || dy < 0 || dx > w + 1 || dy > h + 1 ||
+          visited[dy][dx] || arr[dy][dx] != ' ') {
         continue;
       }
+      visited[dy][dx] = false;
 
-      visited[ny][nx] = true;
+      if(q.empty()){
+      }
+      visited[dy][dx] = true;
       q.push({
-        nx, ny,
-        // We count changes in the direction of the
-        // segment from source to destination:
-        //
-        // None -> Vertical
-        // None -> Horizontal
-        // Vertical -> Horizontal
-        // Horizontal -> Vertical
-        top.step + (top.change != nc ? 1 : 0),
+        dx, dy,
+        top.step + (top.style != nc ? 1 : 0),
         nc});
     }
 
@@ -80,28 +79,21 @@ int bfs(int x1, int y1, int x2, int y2, int w, int h) {
   while (!q.empty()) {
     Node& top = q.front();
     for (int i = 0; i < 4; ++i) {
-      int nx = top.x + ox[i];
-      int ny = top.y + oy[i];
-      Change nc = ox[i] != 0 ? HOR : VER;
-      if (ny == y2 && nx == x2)
-        return top.step + (top.change != nc ? 1 : 0);
+      int dx = top.x + ox[i];
+      int dy = top.y + oy[i];
+      Style nc = ox[i] != 0 ? HOR : VER;
+      if (dy == y2 && dx == x2)
+        return top.step + (top.style != nc ? 1 : 0);
 
-      if (nx < 0 || ny < 0 || nx > w + 1 || ny > h + 1 ||
-          visited[ny][nx] || arr[ny][nx] != ' ') {
+      if (dx < 0 || dy < 0 || dx > w + 1 || dy > h + 1 ||
+          visited[dy][dx] || arr[dy][dx] != ' ') {
         continue;
       }
 
-      visited[ny][nx] = true;
+      visited[dy][dx] = true;
       q.push({
-        nx, ny,
-        // We count changes in the direction of the
-        // segment from source to destination:
-        //
-        // None -> Vertical
-        // None -> Horizontal
-        // Vertical -> Horizontal
-        // Horizontal -> Vertical
-        top.step + (top.change != nc ? 1 : 0),
+        dx, dy,
+        top.step + (top.style != nc ? 1 : 0),
         nc});
     }
 
