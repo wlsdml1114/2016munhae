@@ -1,5 +1,6 @@
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,8 +35,8 @@ public class NakovChatClient
 
     private void prepareGUI(){
         mainFrame = new JFrame("jini chatting");
-        mainFrame.setSize(600, 400);
-        mainFrame.setLayout(new GridBagLayout());
+        mainFrame.setSize(600, 380);
+//        mainFrame.setBackground(new Color(0,0,255));
         mainFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent windowEvent) {
                 System.exit(0);
@@ -43,18 +44,30 @@ public class NakovChatClient
         });
 //        headerLabel = new JLabel("", JLabel.CENTER);
 //        statusLabel = new JLabel("",JLabel.CENTER);
-        textarea = new JTextArea();
+        textarea = new JTextArea(15,35);
+        JScrollPane sp = new JScrollPane(textarea);
+        sp.setPreferredSize(new Dimension(450,290));
+        JPanel jp = new JPanel();
+        jp.add(sp);
+//        jp.add(textarea);
+        jp.setPreferredSize(new Dimension(300, 300));
+//        jp.setSize(300, 300);
+        jp.setBackground(new Color(0,0,255,120));
 //        statusLabel.setSize(350, 100);
         GridBagConstraints gc = new GridBagConstraints();
-        textarea.setSize(400,300);
-        textarea.setText("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+//        textarea.setText("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         controlPanel = new JPanel();
         controlPanel.setLayout(new FlowLayout());
+        controlPanel.setBackground(new Color(0,0,255,120));
+        mainFrame.add(jp, BorderLayout.CENTER);
+
+        controlPanel.setPreferredSize(new Dimension(350,40));
+        mainFrame.add(controlPanel, BorderLayout.SOUTH);
 
 //        mainFrame.add(headerLabel);
-        addComponent(mainFrame, textarea, 0, 0, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
+//        addComponent(mainFrame, textarea, 0, 0, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
 //        mainFrame.add(textarea,gc);
-        addComponent(mainFrame, controlPanel, 0, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
+//        addComponent(mainFrame, controlPanel, 0, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH);
 //        mainFrame.add(controlPanel,gc);
 //        mainFrame.add(statusLabel);
         mainFrame.setVisible(true);
@@ -99,9 +112,9 @@ public class NakovChatClient
     public static void main(String[] args)
     {
 
-        for (int i=0;i<22;++i){
-            arrayList.add("");
-        }
+//        for (int i=0;i<22;++i){
+//            arrayList.add("");
+//        }
         NakovChatClient  swingControlDemo = new NakovChatClient();
         swingControlDemo.showTextFieldDemo();
         BufferedReader in = null;
@@ -134,7 +147,7 @@ public class NakovChatClient
 //                System.out.println(message);//textarea에 추가
                 arrayList.add(message);
                 String temp ="";
-                for(int i = arrayList.size()-22;i<arrayList.size();++i) temp+=arrayList.get(i)+"\n";
+                for(int i = arrayList.size()-1;i>=0;--i) temp+=arrayList.get(i)+"\n";
                 NakovChatClient.textarea.setText(temp);
             }
         } catch (IOException ioe) {
