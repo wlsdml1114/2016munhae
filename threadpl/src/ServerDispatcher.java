@@ -1,6 +1,7 @@
 
 
 import java.net.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ServerDispatcher extends Thread
@@ -47,7 +48,9 @@ public class ServerDispatcher extends Thread
             str+=","+arr[i];
         }
 
-        mMessageQueue.add(nick + " : "+str);
+        mMessageQueue.add(nick + " : " + str);
+        String time = new SimpleDateFormat("MM.dd_HH:mm:ss").format(Calendar.getInstance().getTime());
+        System.out.println("log.."+time+".."+nick + " : "+str);
 //        mMessageQueue.add(aMessage);
         notify();
     }
