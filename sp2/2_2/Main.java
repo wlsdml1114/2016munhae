@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import sp.interfacepack.XEToyAssemler1;
 
@@ -482,9 +483,112 @@ class inst_struct{
 		pass2();
 	}
 	@Override
-	public void printOPCODE() {
+	public void printOPCODE(){
 		// TODO Auto-generated method stub
-		
+		PrintWriter pw;
+		try {
+			pw = new PrintWriter("./src/sp2_2/output.txt");
+		int i=1,section=0;
+		int ls=0,rs=0;
+		pw.println(String.format("H%-6s000000%06X",sections[section],locctr[section]));
+		for(;i<token_line;++i){
+			if(token_table[i].operator_.compareTo("CSECT")==0){
+				int j=0;
+				if(section!=0){
+					pw.print(String.format("%02X",rs-3));
+					pw.print(ls+""+i);
+					for(;ls<i;ls++){
+						pw.print(token_table[ls].opcode);
+					}
+					pw.println();
+					rs=0;
+				}
+				for(;j<modi_num[section];++j){
+					pw.print(String.format("M%06X%02X",Modi[section][j].address,Modi[section][j].length));
+					if(Modi[section][j].flag==1) 
+						pw.print("+");
+					else	
+						pw.print("-");
+					pw.println(Modi[section][j].name);
+				}
+				if(section==0){
+					pw.println("E000000");
+					pw.println();
+				}
+				else{
+					pw.println("E");
+					pw.println();
+				}
+				section++;
+				pw.println(String.format("H%-6s000000%06X",sections[section],locctr[section]));
+			}
+			else if(token_table[i].operator_.compareTo("END")==0){
+				pw.print(String.format("T000000%2X",rs+1));
+				for(;ls<token_line;ls++){
+					if(token_table[i].opcode.compareTo("")==0)continue;
+					pw.print(token_table[ls].opcode);
+				}
+				pw.println();
+				rs=0;
+				int j=0;
+				for(;j<modi_num[section];++j){
+					pw.print(String.format("M%06X%02X",Modi[section][j].address,Modi[section][j].length));
+					if(Modi[section][j].flag==1)
+						pw.print("+");
+					else
+						pw.print("-");
+					pw.println(Modi[section][j].name);
+				}
+				pw.print("E");
+			}
+			else if(token_table[i].operator_.compareTo("EXTDEF")==0){
+				int j=0;
+				pw.print("D");
+				for(;j<extdef_num[section];++j){
+					pw.print(String.format("%-6s%06X",extdef[section][j],sym_table[section][search_label(extdef[section][j],section)].addr));
+				}
+				pw.println();
+			}
+			else if(token_table[i].operator_.compareTo("EXTREF")==0){
+				int j=0;
+				pw.print("R");
+				for(;j<Modifi_num[section];++j){
+					pw.print(String.format("%-6s",Modifi[section][j]));
+				}
+				pw.println();
+			}
+			else if(token_table[i].operator_.compareTo("LTORG")==0){
+				pw.print(String.format("%02X",rs-3));
+				for(;ls<i;ls++){
+					if(token_table[i].opcode.compareTo("")==0)continue;
+					pw.print(token_table[ls].opcode);
+				}
+				ls++;
+				pw.println();
+				rs=0;
+				pw.println(String.format("T%06X%02X%6s",token_table[i].addr,(token_table[i].opcode.length())/2,token_table[i].opcode));
+			}
+			else if(token_table[i].opcode.compareTo("")==0)continue;
+			else{
+				if(rs+(token_table[i].opcode.length())/2>29){
+					pw.print(String.format("T000000%2X",rs));
+					for(;ls<i;ls++){
+						if(token_table[i].opcode.compareTo("")==0)continue;
+						pw.print(token_table[ls].opcode);
+					}
+					pw.println();
+					pw.print(String.format("T%06X",rs));
+					rs = (token_table[i].opcode.length())/2;
+				}
+				rs+=(token_table[i].opcode.length())/2;
+			}
+		}
+		pw.close();
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	public void startt(){
 		File arg = null;
