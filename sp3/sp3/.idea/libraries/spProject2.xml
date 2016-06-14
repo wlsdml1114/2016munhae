@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="spProject2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/spProject2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
