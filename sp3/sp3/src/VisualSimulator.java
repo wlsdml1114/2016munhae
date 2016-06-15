@@ -271,8 +271,8 @@ public class VisualSimulator implements sp.project2.interfacepack.VisualSimulato
     //각각 필요한 오브젝트를 생성해주어 실행가능 상태로 만듬
     @Override
     public void initialize() {
-        SicLoader.getInstance().load(file);
         Sicsimulator.getInstance().initialize(null);
+        SicLoader.getInstance().load(file);
     }
     //하나의 명령어만 실행하는 메소드로써 SIC 시뮬레이터에게 작업을 전달
     @Override

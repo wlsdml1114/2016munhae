@@ -61,9 +61,11 @@ public class SicLoader implements sp.project2.interfacepack.SicLoader{
     public void handleheader(String line){
         String str = line.substring(0, 6);
         str = str.replaceAll("\\s","");
-        if (cur_section_startaddress==0)ResourceManager.getInstance().set_program(str);
         cur_section_startaddress += Integer.parseInt(line.substring(6, 12),16)*2;
         length = Integer.parseInt(line.substring(12),16)*2;
+        if (cur_section_startaddress==0){
+            ResourceManager.getInstance().set_program(str,length);
+        }
         ResourceManager.getInstance().add_estab(new ESTAB(str, cur_section_startaddress, length));
 //        System.out.println(str+" "+cur_section_startaddress+" "+length);
 
@@ -87,6 +89,27 @@ public class SicLoader implements sp.project2.interfacepack.SicLoader{
         int leng = Integer.parseInt(line.substring(6,8),16)*2;
         byte[] bytes = line.substring(8).getBytes();
         ResourceManager.getInstance().setMemory(cur_section_startaddress+startAddress,bytes,leng);
+        String str = new String(bytes);
+        for(int i=0;i<str.length()/2-2;++i){
+            int opcod = Integer.parseInt(str.substring(i * 2, i * 2 + 3), 16);
+            System.out.print(str.substring(i * 2, i * 2 + 3)+" "+opcod/16/4*4+" ");
+            if(!Sicsimulator.getInstance().table.containsKey(opcod/16/4*4)) break;
+            System.out.print("cde");
+            int format = Sicsimulator.getInstance().getinstruction(opcod/16/4*4).getFormat();
+            if (format ==2){
+                ResourceManager.getInstance().addinstruction(str.substring(i*2, i*2 + 4));
+                i+=1;
+            }else{
+                if(opcod%2==1){
+                    ResourceManager.getInstance().addinstruction(str.substring(i*2, i*2 + 8));
+                    i+=3;
+                }
+                else {
+                    ResourceManager.getInstance().addinstruction(str.substring(i*2, i*2 + 6));
+                    i+=2;
+                }
+            }
+        }
     }
     public void handleModi(String line){
         modi.add(new Modifi(Integer.parseInt(line.substring(0,6),16)*2+cur_section_startaddress,Integer.parseInt(line.substring(6,8)),line.charAt(8),line.substring(9)));
@@ -97,7 +120,8 @@ public class SicLoader implements sp.project2.interfacepack.SicLoader{
     public void modifi(){
         for(int j=0;j<modi.size();++j){
 //            System.out.println(modi.get(j));
-            int adr = ResourceManager.getInstance().getESTAB(modi.get(j).symbol)/2;
+            ESTAB estab = ResourceManager.getInstance().getESTAB(ResourceManager.getInstance().getESTABindex(modi.get(j).symbol));
+            int adr = estab.address/2;
             int cur_add = modi.get(j).address;
             char c = modi.get(j).pm;
             if(modi.get(j).length==5)cur_add++;

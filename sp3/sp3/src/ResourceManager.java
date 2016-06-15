@@ -12,11 +12,15 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
     int [] regi;
     String device;
     String program;
+    String logs;
+    String instructions;
     ArrayList<ESTAB> estab;
 
     //메모리 영역을 초기화 하는 메소드
     public ResourceManager() {
         estab = new ArrayList<ESTAB>();
+        logs="";
+        instructions="";
         initializeMemory();
         initializeRegister();
         initialDevice("");
@@ -61,7 +65,7 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
     }
     public void writeDevice(String devName, byte data) throws IOException {
         PrintWriter pw = new PrintWriter(new FileWriter("./"+devName,true));
-        pw.print(data);
+        pw.print((char)data);
         pw.close();
     }
     //선택한 디바이스(파일)에서 값을 읽는 메소드. 파라미터는 변경 가능하다.
@@ -74,6 +78,7 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
         FileInputStream input = new FileInputStream("./"+devName);
         input.read(bytes);
         input.close();
+        if(bytes[index]==10)bytes[index] =0;
         return bytes[index];
     }
 
@@ -133,22 +138,51 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
         VisualSimulator.getInstance().jt_target_address.setText(Integer.toString(target_addr));
         VisualSimulator.getInstance().jt_program_name.setText(program);
         VisualSimulator.getInstance().jt_device.setText(device);
+        VisualSimulator.getInstance().txtLog.setText(instructions);
+        VisualSimulator.getInstance().Logarea.setText(logs);
     }
 
-    public void set_program(String name){
+    public void set_program(String name,int length){
         program = name;
+        start_address=0;
+        this.length = length/2;
     }
-
-    public int getESTAB(String str){
+    public void set_header(ESTAB header){
+        program = header.control_section;
+        start_address = header.address/2;
+        length = header.length/2;
+    }
+    public void addlog(String log){
+        logs+=log+"\n";
+    }
+    public int getESTABindex(String str){
         for(int i=0;i<estab.size();++i){
             if(estab.get(i).control_section.compareTo(str)==0||
                     estab.get(i).name.compareTo(str)==0){
-                return estab.get(i).address;
+                return i;
 
             }
         }
         return -1;
     }
+    public int getESTABindex(int address){
+        for(int i=0;i<estab.size();++i){
+            if(estab.get(i).address==address)return i;
+        }
+        return -1;
+    }
+    public int getESTABindex_Ctrsec(int address){
+        for(int i=0;i<estab.size();++i){
+            if(estab.get(i).address==address&&estab.get(i).length!=0)return i;
+        }
+        return -1;
+    }
+    public void addinstruction(String str){
+        instructions+=str+"\n";
+    }
+    public void setTarget_addr(int addr){target_addr= addr;}
+    public int getTarget_addr(){return target_addr;}
+    public ESTAB getESTAB(int index){return estab.get(index);}
     public void print_memory(){
         for(int i=0;i<MEMORY_SIZE;++i){
             if(i%8==0)System.out.print(" ");
