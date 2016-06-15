@@ -10,6 +10,7 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
     byte[] memory;
     int start_address, length, addr_1st_inst, start_addr_in_mem, target_addr;
     int [] regi;
+    boolean finish = false;//1번 읽으면 그뒤론 안읽게 만드는 변수
     String device;
     String program;
     String logs;
@@ -64,6 +65,7 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
     public void writeDevice(String devName, byte[] data, int size) {
     }
     public void writeDevice(String devName, byte data) throws IOException {
+        if(!finish)finish = true;
         PrintWriter pw = new PrintWriter(new FileWriter("./"+devName,true));
         pw.print((char)data);
         pw.close();
@@ -74,6 +76,7 @@ public class ResourceManager implements sp.project2.interfacepack.ResourceManage
         return null;
     }
     public byte ReadDevice(String devName, int index) throws IOException {
+        if(finish)return 0;
         byte[] bytes = new byte[10000];
         FileInputStream input = new FileInputStream("./"+devName);
         input.read(bytes);

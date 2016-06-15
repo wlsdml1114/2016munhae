@@ -41,8 +41,11 @@ public class Sicsimulator implements SicSimulator{
     //보여주고, 다음 명령어를 포인팅
     @Override
     public void oneStep(){
-        if(finish)return;
         int pc = ResourceManager.getInstance().getRegister(8)*2;//pc is 8
+        if(finish){
+            pc=0;
+            return;
+        }
         byte[] bytes = ResourceManager.getInstance().getMemory(pc, 3);
         System.out.println(new String (bytes));
         int op = Integer.parseInt(new String(bytes), 16);
@@ -102,7 +105,10 @@ public class Sicsimulator implements SicSimulator{
                             data = -data;
                         }
 //                        System.out.println(new String(b) + " "+data+" "+ResourceManager.getInstance().getTarget_addr());
-                        data +=  ResourceManager.getInstance().getTarget_addr();
+
+                        if(!indirect) {
+                            data += ResourceManager.getInstance().getTarget_addr();
+                        }
                         pc = data;
                         pc*=2;
                         System.out.println("pc :"+ pc);
@@ -119,7 +125,7 @@ public class Sicsimulator implements SicSimulator{
                             data = data^0xFFF;
                             data = -data;
                         }
-                        data +=  ResourceManager.getInstance().getTarget_addr();
+                        data += ResourceManager.getInstance().getTarget_addr();
                         pc = data;
                         pc*=2;
                         break;
@@ -219,7 +225,7 @@ public class Sicsimulator implements SicSimulator{
                         ResourceManager.getInstance().initialDevice(new String(ResourceManager.getInstance().getMemory(data*2,2)));
                         break;
                     case "WD" :
-                        log = "A register에 있는 값을 device에 1byte씩 저장한다.";
+                        log = "A register에 있는 값을 device에 1byte 저장한다.";
                         b =ResourceManager.getInstance().getMemory(pc+3,3);
                         data = Integer.parseInt(new String(b),16) + ResourceManager.getInstance().getTarget_addr();
                         b = ResourceManager.getInstance().getMemory(data*2,2);
